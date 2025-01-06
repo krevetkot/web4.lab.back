@@ -1,4 +1,4 @@
-package labs.web4_backend;
+package labs.web4_backend.utils;
 
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
@@ -12,11 +12,13 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.Serializable;
+import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 @Getter
 @Setter
 public class DatabaseManager implements Serializable {
+    private final PasswordCrypter passwordCrypter;
     private static volatile DatabaseManager instance;
     @PersistenceContext
     private EntityManager manager;
@@ -24,6 +26,11 @@ public class DatabaseManager implements Serializable {
 
     public DatabaseManager() {
         manager = Persistence.createEntityManagerFactory("default").createEntityManager();
+        try {
+            passwordCrypter = new PasswordCrypter();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException(e);
+        }
         //метод, который создает фабрику объектов EntityManager на основе конфигурации, заданной в файле persistence.xml
     }
 
@@ -110,21 +117,19 @@ public class DatabaseManager implements Serializable {
 
     public boolean addNewUser(User user) {
         EntityTransaction transaction = manager.getTransaction();
-        if (!userExists(user)) {
-            try {
-                transaction.begin();
-                manager.persist(user);
-                transaction.commit();
-                logger.info("Пользователь добавлен.");
-                return true;
-            } catch (Exception e) {
-                if (transaction.isActive()){
-                    transaction.rollback();
-                }
-                logger.error(e.getMessage());
-                return false;
+        try {
+            String hashed = passwordCrypter.hashPassword(user.getPassword());
+            user.setPassword(hashed);
+            transaction.begin();
+            manager.persist(user);
+            transaction.commit();
+            logger.info("Пользователь добавлен.");
+            return true;
+        } catch (Exception e) {
+            if (transaction.isActive()){
+                transaction.rollback();
             }
-        } else {
+            logger.error(e.getMessage());
             return false;
         }
     }
@@ -133,16 +138,15 @@ public class DatabaseManager implements Serializable {
     public boolean checkUserPassword(User user){
         logger.info("Проверка данных пользователя...");
         EntityTransaction transaction = manager.getTransaction();
-        if (!userExists(user)) {
-            return false;
-        }
+        String hashed = passwordCrypter.hashPassword(user.getPassword());
         try {
             transaction.begin();
             String password = manager.createQuery("SELECT u.password FROM User u WHERE u.login = :username", String.class)
                     .setParameter("username", user.getLogin())
                     .getSingleResult();
             transaction.commit();
-            if (user.getPassword().equals(password)) {
+            if (hashed.equals(password))
+            {
                 logger.info("Пароль совпадает...");
                 return true;
             }

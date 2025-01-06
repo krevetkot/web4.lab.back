@@ -4,6 +4,8 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import labs.web4_backend.model.User;
+import labs.web4_backend.utils.DatabaseManager;
+import labs.web4_backend.utils.PasswordCrypter;
 import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
@@ -27,25 +29,45 @@ public class AuthResource {
         User user = new User(login, password);
 
         JSONObject response = new JSONObject();
-        if (dbManager.userExists(user) && dbManager.checkUserPassword(user)) {
+        if (!dbManager.userExists(user)){
+            response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
+            response.put("message", "No user with such login. Please, sign up.");
+        }
+        else if (dbManager.checkUserPassword(user)) {
             response.put("status", HttpsURLConnection.HTTP_OK);
             response.put("token", "fake-jwt-token-for-" + login); //надо будет токен потом сделать
-            return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
         } else {
             response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
-            response.put("message", "You are loh");
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(response.toString())
-                    .type(MediaType.APPLICATION_JSON)
-                    .build();
+            response.put("message", "Wrong password.");
         }
+
+        return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
     }
 
     @POST
     @Path("/register")
     @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.TEXT_PLAIN)
-    public String register(String login, String password) {
-        return "register";
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response register(String body) {
+        JSONObject request = new JSONObject(body);
+        String login = request.optString("login");
+        String password = request.optString("password");
+        User user = new User(login, password);
+
+        JSONObject response = new JSONObject();
+        if (dbManager.userExists(user)){
+            response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
+            response.put("message", "User with such login already exists. Please, sign in.");
+        }
+        else {
+            if (dbManager.addNewUser(user)){
+                response.put("status", HttpsURLConnection.HTTP_OK);
+                response.put("token", "fake-jwt-token-for-" + login); //надо будет токен потом сделать
+            } else {
+                response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
+                response.put("message", "Registration is failed.");
+            }
+        }
+        return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
     }
 }
