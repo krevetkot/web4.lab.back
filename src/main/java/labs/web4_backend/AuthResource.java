@@ -27,7 +27,7 @@ public class AuthResource {
         User user = new User(login, password);
 
         JSONObject response = new JSONObject();
-        if (dbManager.isUserExists(user) && dbManager.checkUserPassword(user)) {
+        if (dbManager.userExists(user) && dbManager.checkUserPassword(user)) {
             response.put("status", HttpsURLConnection.HTTP_OK);
             response.put("token", "fake-jwt-token-for-" + login); //надо будет токен потом сделать
             return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();

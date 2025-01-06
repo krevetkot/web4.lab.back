@@ -84,14 +84,16 @@ public class DatabaseManager implements Serializable {
         }
     }
 
-    public boolean isUserExists(User user){
+    public boolean userExists(User user){
         logger.info("Поиск пользователя...");
         EntityTransaction transaction = manager.getTransaction();
         try {
             transaction.begin();
-            ArrayList<User> users = new ArrayList<>(manager.createQuery("select u from User u", User.class).getResultList());
+            ArrayList<User> users = new ArrayList<>(manager.createQuery("SELECT u FROM User u WHERE u.login = :username", User.class)
+                    .setParameter("username", user.getLogin())
+                    .getResultList());
             transaction.commit();
-            if (users.isEmpty()){
+            if (!users.isEmpty()){
                 logger.info("Пользователь найден...");
                 return true;
             }
@@ -106,15 +108,14 @@ public class DatabaseManager implements Serializable {
         }
     }
 
-    public boolean checkUserPassword(User user) {
-        logger.info("Проверка данных пользователя...");
+    public boolean addNewUser(User user) {
         EntityTransaction transaction = manager.getTransaction();
-        if (isUserExists(user)) {
+        if (!userExists(user)) {
             try {
                 transaction.begin();
                 manager.persist(user);
                 transaction.commit();
-                logger.info("Точка добавлена.");
+                logger.info("Пользователь добавлен.");
                 return true;
             } catch (Exception e) {
                 if (transaction.isActive()){
@@ -129,10 +130,10 @@ public class DatabaseManager implements Serializable {
     }
 
 
-    public boolean addNewUser(User user){
+    public boolean checkUserPassword(User user){
         logger.info("Проверка данных пользователя...");
         EntityTransaction transaction = manager.getTransaction();
-        if (isUserExists(user)) {
+        if (!userExists(user)) {
             return false;
         }
         try {

@@ -17,7 +17,7 @@ public class User {
     private String password;
     @Id
     @GeneratedValue
-    private Long id;
+    private Integer user_id;
 
     public User(String login, String password){
         this.login = login;
