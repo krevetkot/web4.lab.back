@@ -33,7 +33,6 @@ public class PointsResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Response insertPoint(String body) {
-
         JSONObject request = new JSONObject(body);
         float x = Float.parseFloat(request.optString("x"));
         float y = Float.parseFloat(request.optString("y"));
@@ -43,6 +42,16 @@ public class PointsResource {
 
         dbManager.insertPoint(point);
 
+        JSONObject response = new JSONObject();
+        response.put("status", HttpsURLConnection.HTTP_OK);
+        return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
+    }
+
+
+    @DELETE
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response deletePoints() {
+        dbManager.clearAll();
         JSONObject response = new JSONObject();
         response.put("status", HttpsURLConnection.HTTP_OK);
         return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
