@@ -1,4 +1,4 @@
-package labs.web4_backend;
+package labs.web4_backend.resources;
 
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
