@@ -43,6 +43,7 @@ public class DatabaseManager implements Serializable {
 
     public void insertPoint(Point point) {
         logger.info("Добавление точки...");
+        logger.info(point);
         EntityTransaction transaction = manager.getTransaction();
         try {
             transaction.begin();

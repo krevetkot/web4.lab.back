@@ -10,6 +10,7 @@ import labs.web4_backend.utils.Validator;
 import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
+import java.util.ArrayList;
 
 @Path("/points")
 public class PointsResource {
@@ -37,6 +38,7 @@ public class PointsResource {
         float x = Float.parseFloat(request.optString("x"));
         float y = Float.parseFloat(request.optString("y"));
         float r = Float.parseFloat(request.optString("r"));
+
         boolean isHit = validator.isHit(x, y, r);
         Point point = new Point(x, y, r, isHit);
 
@@ -44,6 +46,7 @@ public class PointsResource {
 
         JSONObject response = new JSONObject();
         response.put("status", HttpsURLConnection.HTTP_OK);
+        response.put("isHit", isHit);
         return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
     }
 
