@@ -111,12 +111,7 @@ public class AuthResource {
             return Response.ok(response.toString(),  MediaType.APPLICATION_JSON).build();
         } catch (ExpiredJwtException e){
             response.put("message", "Токен истёк.");
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(response)
-                    .build();
-        } catch (MalformedJwtException e){
-            response.put("message", "Неверный формат токена.");
-            return Response.status(Response.Status.UNAUTHORIZED)
+            return Response.status(Response.Status.FORBIDDEN)
                     .entity(response)
                     .build();
         } catch (JwtException e){
