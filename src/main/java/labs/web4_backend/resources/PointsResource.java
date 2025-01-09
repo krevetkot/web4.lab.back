@@ -4,13 +4,11 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import labs.web4_backend.model.Point;
-import labs.web4_backend.model.User;
 import labs.web4_backend.utils.DatabaseManager;
 import labs.web4_backend.utils.Validator;
 import org.json.JSONObject;
 
 import javax.net.ssl.HttpsURLConnection;
-import java.util.ArrayList;
 
 @Path("/points")
 public class PointsResource {
@@ -23,9 +21,11 @@ public class PointsResource {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public Response getPoints() {
+    public Response getPoints(@HeaderParam("Authorization") String authHeader) {
+
+
         JSONObject response = new JSONObject();
-        response.put("status", HttpsURLConnection.HTTP_OK);
+//        response.put("status", HttpsURLConnection.HTTP_OK);
         response.put("data", dbManager.getPoints());
         return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
     }
@@ -45,7 +45,7 @@ public class PointsResource {
         dbManager.insertPoint(point);
 
         JSONObject response = new JSONObject();
-        response.put("status", HttpsURLConnection.HTTP_OK);
+//        response.put("status", HttpsURLConnection.HTTP_OK);
         response.put("isHit", isHit);
         return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
     }
@@ -56,7 +56,7 @@ public class PointsResource {
     public Response deletePoints() {
         dbManager.clearAll();
         JSONObject response = new JSONObject();
-        response.put("status", HttpsURLConnection.HTTP_OK);
+//        response.put("status", HttpsURLConnection.HTTP_OK);
         return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
     }
 

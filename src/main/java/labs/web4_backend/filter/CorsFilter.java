@@ -1,5 +1,6 @@
 package labs.web4_backend.filter;
 
+import jakarta.annotation.Priority;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.FilterConfig;
@@ -8,9 +9,11 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.ws.rs.Priorities;
 
 import java.io.IOException;
 
+@Priority(Priorities.HEADER_DECORATOR)
 public class CorsFilter implements Filter {
 
     @Override
