@@ -1,36 +1,47 @@
 package labs.web4_backend.filter;
 
+import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import jakarta.annotation.Priority;
+import jakarta.ws.rs.core.MediaType;
 import labs.web4_backend.utils.DatabaseManager;
 import labs.web4_backend.utils.JWTUtil;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerRequestFilter;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.Provider;
-import javax.ws.rs.Priorities;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerRequestFilter;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.Provider;
+import jakarta.ws.rs.Priorities;
 
+@Secured
 @Provider
 @Priority(Priorities.AUTHENTICATION)
 public class JWTFilter implements ContainerRequestFilter {
     private static final Logger logger = LogManager.getLogger(JWTFilter.class);
+    private final JWTUtil jwtUtil = new JWTUtil();
+    //кароч пока что так: с нормальным токеном пропускает, с плохим отклоняет
+    //значит на уровне ресурсов токены уже проверять не надо
     @Override
     public void filter(ContainerRequestContext requestContext) {
         String authHeader = requestContext.getHeaderString("Authorization");
-        logger.error(authHeader);
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            logger.info(authHeader);
             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
             return;
         }
 
         String token = authHeader.substring("Bearer ".length());
         try {
-            JWTUtil jwtUtil = new JWTUtil();
             String username = jwtUtil.validateToken(token);
             requestContext.setProperty("username", username);
-        } catch (RuntimeException e) {
+//        } catch (ExpiredJwtException e){
+//            if (!requestContext.getUriInfo().getPath().contains("refresh")){
+//                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+//            }
+        } catch (JwtException e){
+            logger.error(e.getMessage());
             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         }
     }
