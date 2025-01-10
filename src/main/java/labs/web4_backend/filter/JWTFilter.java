@@ -1,19 +1,15 @@
 package labs.web4_backend.filter;
 
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.Priority;
-import jakarta.ws.rs.core.MediaType;
-import labs.web4_backend.utils.DatabaseManager;
-import labs.web4_backend.utils.JWTUtil;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-
+import jakarta.ws.rs.Priorities;
 import jakarta.ws.rs.container.ContainerRequestContext;
 import jakarta.ws.rs.container.ContainerRequestFilter;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.Provider;
-import jakarta.ws.rs.Priorities;
+import labs.web4_backend.utils.JWTUtil;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 @Secured
 @Provider
@@ -21,6 +17,7 @@ import jakarta.ws.rs.Priorities;
 public class JWTFilter implements ContainerRequestFilter {
     private static final Logger logger = LogManager.getLogger(JWTFilter.class);
     private final JWTUtil jwtUtil = new JWTUtil();
+
     //кароч пока что так: с нормальным токеном пропускает, с плохим отклоняет
     //значит на уровне ресурсов токены уже проверять не надо
     @Override
@@ -36,11 +33,7 @@ public class JWTFilter implements ContainerRequestFilter {
         try {
             String username = jwtUtil.validateToken(token);
             requestContext.setProperty("username", username);
-//        } catch (ExpiredJwtException e){
-//            if (!requestContext.getUriInfo().getPath().contains("refresh")){
-//                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
-//            }
-        } catch (JwtException e){
+        } catch (JwtException e) {
             logger.error(e.getMessage());
             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         }

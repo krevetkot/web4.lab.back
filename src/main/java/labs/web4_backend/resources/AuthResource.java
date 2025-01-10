@@ -41,20 +41,15 @@ public class AuthResource {
         String refreshToken = jwtUtil.generateRefreshToken(login);
 
         if (!dbManager.userExists(user)){
-            response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
-            response.put("message", "No user with such login. Please, sign up.");
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(response)
                     .build();
         }
         else if (dbManager.checkUserPassword(user)) {
-            response.put("status", HttpsURLConnection.HTTP_OK);
             response.put("accessToken", accessToken);
             response.put("refreshToken", refreshToken);
             return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
         } else {
-            response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
-            response.put("message", "Wrong password.");
             return Response.status(Response.Status.FORBIDDEN)
                     .entity(response)
                     .build();
