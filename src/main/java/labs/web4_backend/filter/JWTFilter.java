@@ -25,7 +25,7 @@ public class JWTFilter implements ContainerRequestFilter {
         String authHeader = requestContext.getHeaderString("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             logger.info(authHeader);
-            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            requestContext.abortWith(Response.status(Response.Status.NETWORK_AUTHENTICATION_REQUIRED).build());
             return;
         }
 
@@ -35,7 +35,7 @@ public class JWTFilter implements ContainerRequestFilter {
             requestContext.setProperty("username", username);
         } catch (JwtException e) {
             logger.error(e.getMessage());
-            requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
+            requestContext.abortWith(Response.status(Response.Status.NETWORK_AUTHENTICATION_REQUIRED).build());
         }
     }
 }

@@ -72,21 +72,16 @@ public class AuthResource {
         String refreshToken = jwtUtil.generateRefreshToken(login);
 
         if (dbManager.userExists(user)){
-            response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
-            response.put("message", "User with such login already exists. Please, sign in.");
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(response)
                     .build();
         }
         else {
             if (dbManager.addNewUser(user)){
-                response.put("status", HttpsURLConnection.HTTP_OK);
                 response.put("accessToken", accessToken);
                 response.put("refreshToken", refreshToken);
                 return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
             } else {
-                response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
-                response.put("message", "Registration is failed.");
                 return Response.status(Response.Status.UNAUTHORIZED)
                         .entity(response)
                         .build();
@@ -108,7 +103,6 @@ public class AuthResource {
             return Response.ok(response.toString(),  MediaType.APPLICATION_JSON).build();
         } catch (JwtException e){
             logger.error(e);
-            response.put("message", "Неверный refresh токен.");
             return Response.status(Response.Status.FORBIDDEN)
                     .entity(response)
                     .build();
