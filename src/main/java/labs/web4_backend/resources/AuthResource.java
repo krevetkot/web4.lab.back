@@ -2,11 +2,8 @@ package labs.web4_backend.resources;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.SignatureException;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.core.*;
 import labs.web4_backend.filter.Secured;
 import labs.web4_backend.model.User;
 import labs.web4_backend.utils.DatabaseManager;
@@ -40,7 +37,8 @@ public class AuthResource {
         User user = new User(login, password);
 
         JSONObject response = new JSONObject();
-        String token = jwtUtil.generateToken(login);
+        String accessToken = jwtUtil.generateAccessToken(login);
+        String refreshToken = jwtUtil.generateRefreshToken(login);
 
         if (!dbManager.userExists(user)){
             response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
@@ -51,12 +49,13 @@ public class AuthResource {
         }
         else if (dbManager.checkUserPassword(user)) {
             response.put("status", HttpsURLConnection.HTTP_OK);
-            response.put("token", token);
+            response.put("accessToken", accessToken);
+            response.put("refreshToken", refreshToken);
             return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
         } else {
             response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
             response.put("message", "Wrong password.");
-            return Response.status(Response.Status.UNAUTHORIZED)
+            return Response.status(Response.Status.FORBIDDEN)
                     .entity(response)
                     .build();
         }
@@ -74,7 +73,8 @@ public class AuthResource {
         User user = new User(login, password);
 
         JSONObject response = new JSONObject();
-        String token = jwtUtil.generateToken(login);
+        String accessToken = jwtUtil.generateAccessToken(login);
+        String refreshToken = jwtUtil.generateRefreshToken(login);
 
         if (dbManager.userExists(user)){
             response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
@@ -86,7 +86,8 @@ public class AuthResource {
         else {
             if (dbManager.addNewUser(user)){
                 response.put("status", HttpsURLConnection.HTTP_OK);
-                response.put("token", token);
+                response.put("accessToken", accessToken);
+                response.put("refreshToken", refreshToken);
                 return Response.ok(response.toString(), MediaType.APPLICATION_JSON).build();
             } else {
                 response.put("status", HttpsURLConnection.HTTP_UNAUTHORIZED);
@@ -99,32 +100,21 @@ public class AuthResource {
     }
 
 
-    @Secured
     @POST
     @Path("/refresh")
-    public Response refresh(@HeaderParam("Authorization") String authHeader) {
+    public Response refresh(@CookieParam("refreshToken") String refreshToken) {
         logger.info("refreshToken");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return Response.status(Response.Status.UNAUTHORIZED).build();
-        }
-
         JSONObject response = new JSONObject();
-        String token = authHeader.substring("Bearer ".length());
-        String username = null;
+
         try {
-            username = jwtUtil.validateToken(token);
-            String newToken = jwtUtil.generateToken(username);
-            response.put("token", newToken);
-            return Response.ok(response.toString(),  MediaType.APPLICATION_JSON).build();
-        } catch (ExpiredJwtException e){
-            logger.error(e);
-            String newToken = jwtUtil.generateToken(username);
-            response.put("token", newToken);
+            String username = jwtUtil.validateToken(refreshToken);
+            String newToken = jwtUtil.generateAccessToken(username);
+            response.put("accessToken", newToken);
             return Response.ok(response.toString(),  MediaType.APPLICATION_JSON).build();
         } catch (JwtException e){
             logger.error(e);
-            response.put("message", "Неверный токен.");
-            return Response.status(Response.Status.UNAUTHORIZED)
+            response.put("message", "Неверный refresh токен.");
+            return Response.status(Response.Status.FORBIDDEN)
                     .entity(response)
                     .build();
         }
