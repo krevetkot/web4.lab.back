@@ -58,12 +58,15 @@ public class DatabaseManager implements Serializable {
         }
     }
 
-    public ArrayList<Point> getPoints() {
+    public ArrayList<Point> getPoints(String login) {
         logger.info("Получение таблицы результатов...");
         EntityTransaction transaction = manager.getTransaction();
         try {
             transaction.begin();
-            ArrayList<Point> points = new ArrayList<>(manager.createQuery("select p from Point p", Point.class).getResultList());
+            ArrayList<Point> points = new ArrayList<>(manager.createQuery("select p from Point p WHERE p.owner = :username", Point.class)
+                    .setParameter("username", login)
+                    .getResultList());
+
             transaction.commit();
             logger.info("Получение таблицы результатов прошло успешно.");
             return points;
@@ -76,12 +79,14 @@ public class DatabaseManager implements Serializable {
         }
     }
 
-    public void clearAll() {
+    public void clearAll(String login) {
         logger.info("Очищение таблицы результатов...");
         EntityTransaction transaction = manager.getTransaction();
         try {
             transaction.begin();
-            manager.createQuery("delete from Point p").executeUpdate();
+            manager.createQuery("delete from Point p WHERE p.owner = :username")
+                    .setParameter("username", login)
+                    .executeUpdate();
             transaction.commit();
             logger.info("Удаление таблицы результатов прошло успешно.");
         } catch (Exception e){

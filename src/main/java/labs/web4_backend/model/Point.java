@@ -17,13 +17,15 @@ public class Point {
     private float y;
     private float r;
     private boolean isHit;
+    private String owner;
     @Id
     @GeneratedValue
     private Long id;
-    public Point(float x, float y, float r, boolean isHit){
+    public Point(float x, float y, float r, boolean isHit, String owner){
         this.x = x;
         this.y = y;
         this.r = r;
         this.isHit = isHit;
+        this.owner = owner;
     }
 }
