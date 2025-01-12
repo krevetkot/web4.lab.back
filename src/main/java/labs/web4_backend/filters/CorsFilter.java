@@ -1,4 +1,4 @@
-package labs.web4_backend.filter;
+package labs.web4_backend.filters;
 
 import jakarta.annotation.Priority;
 import jakarta.servlet.*;

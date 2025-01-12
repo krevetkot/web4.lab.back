@@ -1,9 +1,11 @@
 package labs.web4_backend.resources;
 
 import io.jsonwebtoken.JwtException;
+import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
-import labs.web4_backend.model.User;
+import labs.web4_backend.beans.Point;
+import labs.web4_backend.beans.User;
 import labs.web4_backend.utils.DatabaseManager;
 import labs.web4_backend.utils.JWTUtil;
 import org.apache.logging.log4j.LogManager;
@@ -12,14 +14,11 @@ import org.json.JSONObject;
 
 @Path("/auth")
 public class AuthResource {
-    private final DatabaseManager dbManager;
-    private final JWTUtil jwtUtil;
+    @EJB
+    private DatabaseManager dbManager;
+    @EJB
+    private JWTUtil jwtUtil;
     private static final Logger logger = LogManager.getLogger(AuthResource.class);
-
-    public AuthResource(){
-        dbManager = DatabaseManager.getInstance();
-        jwtUtil = new JWTUtil();
-    }
 
     @POST
     @Path("/login")

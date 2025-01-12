@@ -1,4 +1,4 @@
-package labs.web4_backend.filter;
+package labs.web4_backend.filters;
 import jakarta.ws.rs.NameBinding;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;

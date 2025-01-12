@@ -1,11 +1,15 @@
 package labs.web4_backend.utils;
 
+import jakarta.ejb.EJB;
+import jakarta.ejb.Singleton;
+import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 import jakarta.persistence.Persistence;
 import jakarta.persistence.PersistenceContext;
-import labs.web4_backend.model.Point;
-import labs.web4_backend.model.User;
+import jakarta.transaction.Transactional;
+import labs.web4_backend.beans.Point;
+import labs.web4_backend.beans.User;
 import lombok.Getter;
 import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
@@ -15,65 +19,52 @@ import java.io.Serializable;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
-@Getter
-@Setter
+@Singleton
+@Transactional
 public class DatabaseManager implements Serializable {
-    private final PasswordCrypter passwordCrypter;
-    private static volatile DatabaseManager instance;
-    @PersistenceContext
+    @EJB
+    private PasswordCrypter passwordCrypter;
+    @PersistenceContext(unitName = "default")
     private EntityManager manager;
     private static final Logger logger = LogManager.getLogger(DatabaseManager.class);
 
-    public DatabaseManager() {
-        manager = Persistence.createEntityManagerFactory("default").createEntityManager();
-        try {
-            passwordCrypter = new PasswordCrypter();
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-        //метод, который создает фабрику объектов EntityManager на основе конфигурации, заданной в файле persistence.xml
-    }
+//    public DatabaseManager() {
+//        manager =
+//        try {
+//            passwordCrypter
+//        } catch (NoSuchAlgorithmException e) {
+//            throw new RuntimeException(e);
+//        }
+//    }
 
-    public static DatabaseManager getInstance(){
-        if (instance==null){
-            return new DatabaseManager();
-        }
-        return instance;
-    }
+//    public static DatabaseManager getInstance(){
+//        if (instance==null){
+//            return new DatabaseManager();
+//        }
+//        return instance;
+//    }
 
     public void insertPoint(Point point) {
         logger.info("Добавление точки...");
         logger.info(point);
-        EntityTransaction transaction = manager.getTransaction();
         try {
-            transaction.begin();
             manager.persist(point);
-            transaction.commit();
             logger.info("Точка добавлена.");
         } catch (Exception e) {
-            if (transaction.isActive()){
-                transaction.rollback();
-            }
             logger.error(e.getMessage());
         }
     }
 
     public ArrayList<Point> getPoints(String login) {
         logger.info("Получение таблицы результатов...");
-        EntityTransaction transaction = manager.getTransaction();
         try {
-            transaction.begin();
             ArrayList<Point> points = new ArrayList<>(manager.createQuery("select p from Point p WHERE p.owner = :username", Point.class)
                     .setParameter("username", login)
                     .getResultList());
 
-            transaction.commit();
             logger.info("Получение таблицы результатов прошло успешно.");
             return points;
         } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
             logger.error(e.getMessage());
             return new ArrayList<>();
         }
@@ -81,31 +72,22 @@ public class DatabaseManager implements Serializable {
 
     public void clearAll(String login) {
         logger.info("Очищение таблицы результатов...");
-        EntityTransaction transaction = manager.getTransaction();
         try {
-            transaction.begin();
             manager.createQuery("delete from Point p WHERE p.owner = :username")
                     .setParameter("username", login)
                     .executeUpdate();
-            transaction.commit();
             logger.info("Удаление таблицы результатов прошло успешно.");
         } catch (Exception e){
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
             logger.error(e.getMessage());
         }
     }
 
     public boolean userExists(User user){
         logger.info("Поиск пользователя...");
-        EntityTransaction transaction = manager.getTransaction();
         try {
-            transaction.begin();
             ArrayList<User> users = new ArrayList<>(manager.createQuery("SELECT u FROM User u WHERE u.login = :username", User.class)
                     .setParameter("username", user.getLogin())
                     .getResultList());
-            transaction.commit();
             if (!users.isEmpty()){
                 logger.info("Пользователь найден...");
                 return true;
@@ -113,28 +95,19 @@ public class DatabaseManager implements Serializable {
             logger.info("Пользователь не найден...");
             return false;
         } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
             logger.error(e.getMessage());
             return false;
         }
     }
 
     public boolean addNewUser(User user) {
-        EntityTransaction transaction = manager.getTransaction();
         try {
             String hashed = passwordCrypter.hashPassword(user.getPassword());
             user.setPassword(hashed);
-            transaction.begin();
             manager.persist(user);
-            transaction.commit();
             logger.info("Пользователь добавлен.");
             return true;
         } catch (Exception e) {
-            if (transaction.isActive()){
-                transaction.rollback();
-            }
             logger.error(e.getMessage());
             return false;
         }
@@ -143,14 +116,11 @@ public class DatabaseManager implements Serializable {
 
     public boolean checkUserPassword(User user){
         logger.info("Проверка данных пользователя...");
-        EntityTransaction transaction = manager.getTransaction();
         String hashed = passwordCrypter.hashPassword(user.getPassword());
         try {
-            transaction.begin();
             String password = manager.createQuery("SELECT u.password FROM User u WHERE u.login = :username", String.class)
                     .setParameter("username", user.getLogin())
                     .getSingleResult();
-            transaction.commit();
             if (hashed.equals(password))
             {
                 logger.info("Пароль совпадает...");
@@ -159,9 +129,6 @@ public class DatabaseManager implements Serializable {
             logger.info("Пароль не совпадает...");
             return false;
         } catch (Exception e) {
-            if (transaction.isActive()) {
-                transaction.rollback();
-            }
             logger.error(e.getMessage());
             return false;
         }

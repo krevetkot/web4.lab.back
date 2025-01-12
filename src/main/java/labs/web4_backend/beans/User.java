@@ -1,4 +1,4 @@
-package labs.web4_backend.model;
+package labs.web4_backend.beans;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

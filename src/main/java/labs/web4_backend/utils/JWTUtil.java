@@ -1,21 +1,19 @@
 package labs.web4_backend.utils;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import jakarta.ejb.Stateless;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
 
+@Stateless
 public class JWTUtil {
 
     private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long ACCESS_EXPIRATION_TIME = 3600000; // 1 час
     private static final Logger logger = LogManager.getLogger(JWTUtil.class);
-
-    public JWTUtil(){
-
-    }
 
     public String generateAccessToken(String username) {
         logger.info("generateAccessToken");

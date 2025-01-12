@@ -1,4 +1,4 @@
-package labs.web4_backend.filter;
+package labs.web4_backend.filters;
 
 import io.jsonwebtoken.JwtException;
 import jakarta.annotation.Priority;

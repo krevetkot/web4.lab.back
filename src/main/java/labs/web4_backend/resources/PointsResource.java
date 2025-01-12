@@ -1,13 +1,14 @@
 package labs.web4_backend.resources;
 
+import jakarta.ejb.EJB;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import labs.web4_backend.filter.Secured;
-import labs.web4_backend.model.Point;
+import labs.web4_backend.filters.Secured;
+import labs.web4_backend.beans.Point;
 import labs.web4_backend.utils.DatabaseManager;
 import labs.web4_backend.utils.JWTUtil;
-import labs.web4_backend.utils.Validator;
+import labs.web4_backend.utils.AreaValidator;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -15,16 +16,12 @@ import org.json.JSONObject;
 @Secured
 @Path("/points")
 public class PointsResource {
-    private final DatabaseManager dbManager;
-    private final Validator validator;
-    private final JWTUtil jwtUtil;
+    @EJB
+    private DatabaseManager dbManager;
+    private final AreaValidator areaValidator = new AreaValidator();
+    @EJB
+    private JWTUtil jwtUtil;
     private static final Logger logger = LogManager.getLogger(PointsResource.class);
-
-    public PointsResource() {
-        dbManager = DatabaseManager.getInstance();
-        validator = new Validator();
-        jwtUtil = new JWTUtil();
-    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -47,7 +44,7 @@ public class PointsResource {
         float y = Float.parseFloat(request.optString("y"));
         float r = Float.parseFloat(request.optString("r"));
 
-        boolean isHit = validator.isHit(x, y, r);
+        boolean isHit = areaValidator.isHit(x, y, r);
 
         String token = authHeader.substring("Bearer ".length());
         String login = jwtUtil.validateToken(token);

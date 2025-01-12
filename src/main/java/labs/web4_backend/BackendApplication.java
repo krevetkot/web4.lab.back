@@ -2,7 +2,7 @@ package labs.web4_backend;
 
 import jakarta.ws.rs.ApplicationPath;
 import jakarta.ws.rs.core.Application;
-import labs.web4_backend.filter.JWTFilter;
+import labs.web4_backend.filters.JWTFilter;
 import labs.web4_backend.resources.AuthResource;
 import labs.web4_backend.resources.PointsResource;
 
