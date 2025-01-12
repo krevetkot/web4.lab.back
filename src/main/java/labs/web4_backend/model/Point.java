@@ -26,7 +26,4 @@ public class Point {
         this.r = r;
         this.isHit = isHit;
     }
-    public boolean getIsHit(){
-        return isHit;
-    }
 }

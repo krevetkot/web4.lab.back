@@ -11,7 +11,6 @@ public class JWTUtil {
 
     private static final SecretKey SECRET_KEY = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     private final long ACCESS_EXPIRATION_TIME = 3600000; // 1 час
-    private final long REFRESH_EXPIRATION_TIME = ACCESS_EXPIRATION_TIME*24*30; //30 дней
     private static final Logger logger = LogManager.getLogger(JWTUtil.class);
 
     public JWTUtil(){
@@ -32,6 +31,8 @@ public class JWTUtil {
     public String generateRefreshToken(String username) {
         logger.info("generateRefreshToken");
         logger.info(SECRET_KEY);
+        //30 дней
+        long REFRESH_EXPIRATION_TIME = ACCESS_EXPIRATION_TIME * 24 * 30;
         return Jwts.builder()
                 .setSubject(username)
                 .setIssuedAt(new Date())
