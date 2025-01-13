@@ -2,21 +2,15 @@ package labs.web4_backend.utils;
 
 import jakarta.ejb.EJB;
 import jakarta.ejb.Singleton;
-import jakarta.ejb.Stateless;
 import jakarta.persistence.EntityManager;
-import jakarta.persistence.EntityTransaction;
-import jakarta.persistence.Persistence;
 import jakarta.persistence.PersistenceContext;
 import jakarta.transaction.Transactional;
 import labs.web4_backend.beans.Point;
 import labs.web4_backend.beans.User;
-import lombok.Getter;
-import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.Serializable;
-import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 
 @Singleton
@@ -27,22 +21,6 @@ public class DatabaseManager implements Serializable {
     @PersistenceContext(unitName = "default")
     private EntityManager manager;
     private static final Logger logger = LogManager.getLogger(DatabaseManager.class);
-
-//    public DatabaseManager() {
-//        manager =
-//        try {
-//            passwordCrypter
-//        } catch (NoSuchAlgorithmException e) {
-//            throw new RuntimeException(e);
-//        }
-//    }
-
-//    public static DatabaseManager getInstance(){
-//        if (instance==null){
-//            return new DatabaseManager();
-//        }
-//        return instance;
-//    }
 
     public void insertPoint(Point point) {
         logger.info("Добавление точки...");
@@ -77,18 +55,18 @@ public class DatabaseManager implements Serializable {
                     .setParameter("username", login)
                     .executeUpdate();
             logger.info("Удаление таблицы результатов прошло успешно.");
-        } catch (Exception e){
+        } catch (Exception e) {
             logger.error(e.getMessage());
         }
     }
 
-    public boolean userExists(User user){
+    public boolean userExists(User user) {
         logger.info("Поиск пользователя...");
         try {
             ArrayList<User> users = new ArrayList<>(manager.createQuery("SELECT u FROM User u WHERE u.login = :username", User.class)
                     .setParameter("username", user.getLogin())
                     .getResultList());
-            if (!users.isEmpty()){
+            if (!users.isEmpty()) {
                 logger.info("Пользователь найден...");
                 return true;
             }
@@ -114,15 +92,14 @@ public class DatabaseManager implements Serializable {
     }
 
 
-    public boolean checkUserPassword(User user){
+    public boolean checkUserPassword(User user) {
         logger.info("Проверка данных пользователя...");
         String hashed = passwordCrypter.hashPassword(user.getPassword());
         try {
             String password = manager.createQuery("SELECT u.password FROM User u WHERE u.login = :username", String.class)
                     .setParameter("username", user.getLogin())
                     .getSingleResult();
-            if (hashed.equals(password))
-            {
+            if (hashed.equals(password)) {
                 logger.info("Пароль совпадает...");
                 return true;
             }
